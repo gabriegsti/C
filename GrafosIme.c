@@ -1,0 +1,114 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<stddef.h>
+
+
+
+/* Vértices de grafos são representados por objetos do tipo vertex. */
+#define vertex int
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A estrutura graph representa um grafo. O campo adj é um ponteiro para a matriz de adjacências do grafo. O campo V contém o número de vértices e o campo A contém o número de arcos do grafo. */
+struct graph {
+   int V;
+   int A;
+   int **adj;
+};
+/* Um Graph é um ponteiro para um graph, ou seja, um Graph contém o endereço de um graph. */
+typedef struct graph *Graph;
+
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função MATRIXint() aloca uma matriz com linhas 0..r-1 e colunas 0..c-1. Cada elemento da matriz recebe valor val. */
+static int **MATRIXint( int r, int c, int val) {
+   int **m = malloc( r * sizeof (int *));
+   for (vertex i = 0; i < r; ++i)
+      m[i] = malloc( c * sizeof (int));
+   for (vertex i = 0; i < r; ++i)
+      for (vertex j = 0; j < c; ++j)
+         m[i][j] = val;
+   return m;
+}
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função GRAPHinit() constrói um grafo com vértices 0 1 .. V-1 e nenhum arco. */
+Graph GRAPHinit( int V) {
+   Graph G = malloc( sizeof *G);
+   G->V = V;
+   G->A = 0;
+   G->adj = MATRIXint( V, V, 0);
+   return G;
+}
+
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função GRAPHinsertArc() insere um arco v-w no grafo G. A função supõe que v e w são distintos, positivos e menores que G->V. Se o grafo já tem um arco v-w, a função não faz nada. */
+void GRAPHinsertArc( Graph G, vertex v, vertex w) {
+   if (G->adj[v][w] == 0) {
+      G->adj[v][w] = 1;
+      G->A++;
+   }
+}
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função GRAPHremoveArc() remove do grafo G o arco v-w. A função supõe que v e w são distintos, positivos e menores que G->V. Se não existe arco v-w, a função não faz nada. */
+void GRAPHremoveArc( Graph G, vertex v, vertex w) {
+   //if (G->adj[v][w] == 1) {
+      G->adj[v][w] = 0;
+      G->A--;
+   //}
+}
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função GRAPHshow() imprime, para cada vértice v do grafo G, em uma linha, todos os vértices adjacentes a v. */
+void GRAPHshow( Graph G) {
+   for (vertex v = 0; v < G->V; ++v) {
+      printf( "%2d:", v);
+      for (vertex w = 0; w < G->V; ++w)
+         if (G->adj[v][w] == 1)
+            printf( " %2d", w);
+      printf( "\n");
+   }
+   printf("===============================================\n");
+}
+
+
+Graph GRAPHbuildComplete( int V) {
+   Graph G;
+   G = GRAPHinit( V);
+   for (vertex v = 0; v < G->V; ++v)
+      for (vertex w = 0; w < G->V; ++w)
+         //if (w != v)
+            GRAPHinsertArc( G, v, w);
+   return G;
+}
+
+static int cnt;
+int pre[1000];
+
+
+/* A funçao dfsR() visita todos os vértices de G que podem ser alcançados a partir do vértice v sem passar por vértices já descobertos. A função atribui cnt+k a pre[x] se x é o k-ésimo vértice descoberto. (O código supõe que G é representado por uma matriz de adjacências.) */
+static void dfsR( Graph G, vertex v)
+{
+   pre[v] = cnt++;
+   for (vertex w = 0; w < G->V; ++w)
+      if (G->adj[v][w] != 0 && pre[w] == -1){
+        dfsR( G, w);
+        }else{
+               GRAPHremoveArc(G,v,w);
+                GRAPHshow(G);
+        }
+}
+
+
+/* A função GRAPHdfs() faz uma busca em profundidade no grafo G. Ela atribui um número de ordem pre[x] a cada vértice x de modo que o k-ésimo vértice descoberto receba o número de ordem k.  (Código inspirado no programa 18.3 de Sedgewick.) */
+void GRAPHdfs( Graph G)
+{
+   cnt = 0;
+   for (vertex v = 0; v < G->V; ++v)
+      pre[v] = -1;
+   for (vertex v = 0; v < G->V; ++v)
+      if (pre[v] == -1)
+         dfsR( G, v); // começa nova etapa
+}
+
+
+
+
+int main(int argc, char **argv){
+Graph G;
+G=GRAPHbuildComplete(6);
+GRAPHshow(G);
+GRAPHdfs(G);
+
+
+
+}
