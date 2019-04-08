@@ -1,0 +1,135 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<stddef.h>
+
+
+
+/* Vértices de grafos são representados por objetos do tipo vertex. */
+#define vertex int
+
+struct graph {
+   int V;
+   int A;
+   int **adj;
+};
+
+/* Um Graph é um ponteiro para um graph, ou seja, um Graph contém o endereço de um graph. */
+typedef struct graph *Graph;
+
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função MATRIXint() aloca uma matriz com linhas 0..r-1 e colunas 0..c-1. Cada elemento da matriz recebe valor val. */
+static int **MATRIXint( int r, int c, int val) {
+   int **m = malloc( r * sizeof (int *));
+   for (vertex i = 0; i < r; ++i)
+      m[i] = malloc( c * sizeof (int));
+   for (vertex i = 0; i < r; ++i)
+      for (vertex j = 0; j < c; ++j)
+         m[i][j] = val;
+   return m;
+}
+
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função GRAPHinit() constrói um grafo com vértices 0 1 .. V-1 e nenhum arco. */
+Graph GRAPHinit( int V) {
+   Graph G = malloc( sizeof *G);
+   G->V = V;
+   G->A = 0;
+   G->adj = MATRIXint( V, V, 0);
+   return G;
+}
+
+
+
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função GRAPHinsertArc() insere um arco v-w no grafo G. A função supõe que v e w são distintos, positivos e menores que G->V. Se o grafo já tem um arco v-w, a função não faz nada. */
+void GRAPHinsertArc( Graph G, vertex entrada, vertex saida) {
+   if (G->adj[entrada][saida] == 0) {
+      G->adj[entrada][saida] = 1;
+      G->adj[saida][entrada]=1;
+      G->A++;
+   }
+}
+
+
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função GRAPHremoveArc() remove do grafo G o arco v-w. A função supõe que v e w são distintos, positivos e menores que G->V. Se não existe arco v-w, a função não faz nada. */
+void GRAPHremoveArc( Graph G, vertex v, vertex w) {
+   if (G->adj[v][w] == 1) {
+
+      G->adj[v][w] = 0;
+      G->adj[w][v] = 0;
+      G->A--;
+   }
+}
+
+
+/* REPRESENTAÇÃO POR MATRIZ DE ADJACÊNCIAS: A função GRAPHshow() imprime, para cada vértice v do grafo G, em uma linha, todos os vértices adjacentes a v. */
+void GRAPHshow( Graph G) {
+
+    for(vertex v=0;v<G->V;v++){
+        printf("%2d",v);
+    }
+    printf( "\n");
+
+   for (vertex v = 1; v < G->V; ++v) {
+      printf( "%2d", v);
+      for (vertex w = 1; w < G->V; ++w){
+          printf("%2d",G->adj[v][w]);
+      }
+      printf( "\n");
+   }
+         printf( "===================================================================================\n");
+
+}
+
+
+Graph GRAPHbuildComplete( int V) {
+   Graph G;
+   G = GRAPHinit(V);
+   for (vertex v = 1; v < G->V; v++){
+      for (vertex w = 1; w < G->V; w++){
+           if (G->adj[v][w] == 0) {
+                G->adj[v][w] = 0;
+                G->A++;
+            }
+
+      }
+   }
+
+   return G;
+}
+
+/* A funçao dfsR() visita todos os vértices de G que podem ser alcançados a partir do vértice v sem passar por vértices já descobertos.
+A função atribui 0 aos nós visitados, apenas uma forma para ilustrar o raciocínio utilizado */
+static void dfsR( Graph G, vertex v)
+{
+   for (vertex w = (G->V)-1; w >0; --w){
+      if (G->adj[v][w] != 0){
+               GRAPHremoveArc(G,v,w);
+                GRAPHshow(G);
+        }
+   }
+}
+
+
+// A função GRAPHdfs() faz uma busca em profundidade no grafo G.
+void GRAPHdfs(Graph G)
+{
+   for (vertex v =(G->V)-1 ; v >0; --v)
+
+         dfsR( G, v); // começa nova etapa
+}
+
+
+
+
+
+int main(int argc, char **argv){
+Graph G;
+G=GRAPHbuildComplete(6);
+GRAPHshow(G);
+GRAPHinsertArc(G,1,5);
+GRAPHinsertArc(G,5,3);
+GRAPHinsertArc(G,1,2);
+GRAPHinsertArc(G,2,4);
+GRAPHshow(G);
+
+GRAPHdfs(G);
+
+}
